@@ -1,43 +1,94 @@
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Scanner;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Random;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+
 public class Main {
     public static void main(String[] args) {
-        // Press Alt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter("outdata.txt");
-            FileReader fr = null;
-            fr = new FileReader("jsondata.txt");
-            Scanner scan = new Scanner(fr);
 
-            String jsonstr =  scan.nextLine().replace('{','}');
-            jsonstr = jsonstr.substring(1,jsonstr.length() - 2);
-            String[] jsonObjects = jsonstr.split("}");
-            String[] fildObj;
-            StringBuilder outStr = new StringBuilder();
-            for (int i = 1; i < jsonObjects.length; i+= 2) {
-                fildObj = jsonObjects[i].strip().split("\"");
-                outStr.append("Студент ");
-                outStr.append(fildObj[3]);
-                outStr.append(" получил(а) ");
-                outStr.append(fildObj[7]);
-                outStr.append(" по предмету ");
-                outStr.append(fildObj[11]);
-                System.out.println(outStr);
-                outStr.append("\n");
-                fw.write(outStr.toString());
-                outStr = new StringBuilder();
-            }
-            fw.close();
-        } catch (IOException e) {;
-            throw new RuntimeException(e);
+        
+        LinkedList<Integer> llsrc = new LinkedList<Integer>();
+        LinkedList<Integer> lldst = new LinkedList<Integer>();
+        for (int i = 0; i < 30; i++) {
+            Random random = new Random();
+            llsrc.add((Integer) random.nextInt(100));
+            System.out.print(llsrc.getLast() + " ");
         }
+        for (int i = 0; i < 30; i++) {
+            lldst.add(llsrc.pollLast());
+        }
+        System.out.println("");
+        for (int i = 0; i < 30; i++) {
+            System.out.print(lldst.get(i) + " ");
+        }
+        System.out.println("");
+
+       
+        Queue q = new Queue<Integer>();
+        for (int i = 0; i < 10; i++) {
+            q.enqueue((Integer)i);
+        }
+        for (int i = 0; i < 7; i++) {
+            System.out.print(q.dequeue() + " ");
+        }
+
+       
+        System.out.println("\n" + q.first());
+        Integer sum = 0;
+        for (int i = 0; i < 30; i++) {
+            sum += lldst.iterator().next();
+        }
+        System.out.print(sum);
+
+    }
+}
+class Queue<T>{
+    LinkedList<T> ll = new LinkedList<T>();
+    public void enqueue(T obj){
+        ll.add(obj);
+    }
+    public T dequeue(){
+        return ll.pollFirst();
+    }
+    public T first(){
+        return ll.getFirst();
+    }
+
+}
+    
+class Queue2<T>{
+    Object[] ll = new Object[16];
+    int curElem = 0;
+    int firstElem = 0;
+    public void enqueue(T obj){
+        if(curElem + 1 == ll.length){
+            updateArr();
+        }
+        ll[curElem] = obj;
+        curElem++;
+    }
+    public T dequeue(){
+        if(firstElem > curElem){
+            return null;
+        }
+        T elem = (T)ll[firstElem];
+        firstElem++;
+        return elem;
+
+    }
+    public T first(){
+        if(firstElem > curElem){
+            return null;
+        }
+        return (T)ll[firstElem];
+    }
+    void updateArr(){
+        if(firstElem > ll.length / 2){
+            firstElem -= ll.length / 2;
+            curElem -= ll.length / 2;
+            ll = Arrays.copyOfRange(ll,ll.length / 2,ll.length);
+        }
+        ll = Arrays.copyOf(ll,ll.length * 2);
     }
 }
