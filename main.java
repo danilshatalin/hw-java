@@ -1,94 +1,184 @@
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Random;
+/* 
+*
+Задание
 
+Реализуйте структуру телефонной книги с помощью HashMap.
+Программа также должна учитывать, что во входной структуре будут повторяющиеся имена с разными телефонами,
+их необходимо считать, как одного человека с разными телефонами.
+Вывод должен быть отсортирован по убыванию числа телефонов.
 
-public class Main {
-    public static void main(String[] args) {
+Пример ввода:
+Иванов 234234
+Иванов 32523
+Иванов 5687
+Иванов: 234234, 32523, 5687
 
-        
-        LinkedList<Integer> llsrc = new LinkedList<Integer>();
-        LinkedList<Integer> lldst = new LinkedList<Integer>();
-        for (int i = 0; i < 30; i++) {
-            Random random = new Random();
-            llsrc.add((Integer) random.nextInt(100));
-            System.out.print(llsrc.getLast() + " ");
-        }
-        for (int i = 0; i < 30; i++) {
-            lldst.add(llsrc.pollLast());
-        }
-        System.out.println("");
-        for (int i = 0; i < 30; i++) {
-            System.out.print(lldst.get(i) + " ");
-        }
-        System.out.println("");
+Варианты Map:
+Map<String, ArrayList>
+Map<String, String>
 
-       
-        Queue q = new Queue<Integer>();
-        for (int i = 0; i < 10; i++) {
-            q.enqueue((Integer)i);
-        }
-        for (int i = 0; i < 7; i++) {
-            System.out.print(q.dequeue() + " ");
-        }
+Пример меню:
+1. Добавить контакт
+2. Вывести всех
+3. Выход
+*/
 
-       
-        System.out.println("\n" + q.first());
-        Integer sum = 0;
-        for (int i = 0; i < 30; i++) {
-            sum += lldst.iterator().next();
-        }
-        System.out.print(sum);
+package HomeWorks.hw5;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class Task1 {
+    public static void main(String[] args) throws IOException {
+
+        mainMenu();
 
     }
-}
-class Queue<T>{
-    LinkedList<T> ll = new LinkedList<T>();
-    public void enqueue(T obj){
-        ll.add(obj);
-    }
-    public T dequeue(){
-        return ll.pollFirst();
-    }
-    public T first(){
-        return ll.getFirst();
+
+    public static void mainMenu() throws IOException {
+        Map<String, String> phonebookMAP = fileToHashMap();
+        Scanner input_data = new Scanner(System.in, "cp866");
+        while (true) {
+            System.out.printf("1. Добавить контакт\n" +
+                            "2. Вывести всех\n" +
+                            "3. Выход\n" +
+                            "Выберите действие: ");
+            String action_input = input_data.nextLine();
+            switch (action_input) {
+                case "1":
+                    System.out.printf("Введите Фамилию и телефон: ");
+                    String contact_input = input_data.nextLine();
+                    addContact(phonebookMAP, contact_input);
+                    break;
+                case "2":
+                    printHashMapSorted(phonebookMAP);
+                    break;
+                case "3":
+                    input_data.close();
+                    System.exit(0);            
+                default:
+                    System.out.println(repeat(80, "="));
+                    System.out.println("Ошибка! Неверный ввод.");
+                    System.out.println(repeat(80, "="));
+            }       
+        }
     }
 
-}
-    
-class Queue2<T>{
-    Object[] ll = new Object[16];
-    int curElem = 0;
-    int firstElem = 0;
-    public void enqueue(T obj){
-        if(curElem + 1 == ll.length){
-            updateArr();
+    public static Map<String, String> fileToHashMap() throws IOException {
+        String pathDir = System.getProperty("user.dir");
+        String pathFileName = pathDir.concat("\\Task1.txt");
+        File phonebookFile = new File(pathFileName);
+
+        if (phonebookFile.createNewFile()) {
+            System.out.println("Создание новой телефонной книги!");
         }
-        ll[curElem] = obj;
-        curElem++;
+
+        BufferedReader buffReader = new BufferedReader(new FileReader(phonebookFile));
+        String str;
+
+        Map<String, String> phonebookMAP = new HashMap<>();
+
+        while ((str = buffReader.readLine()) != null) {
+            phonebookMAP.put(str.split(":")[0].trim(), str.split(":")[1].trim());
+        }
+        buffReader.close();
+        return phonebookMAP;
     }
-    public T dequeue(){
-        if(firstElem > curElem){
-            return null;
+
+    public static void printHashMap(Map<String, String> hashmap) {
+        System.out.println(repeat(80, "="));
+        for (var contact : hashmap.entrySet()) {
+            System.out.printf("%s: %s\n", contact.getKey(), contact.getValue());
         }
-        T elem = (T)ll[firstElem];
-        firstElem++;
-        return elem;
+        System.out.println(repeat(80, "="));
+    }
+
+    public static void printHashMapSorted(Map<String, String> hashmap) {
+        String[] contactByPhones = new String[hashmap.size()];
+        int index = 0;
+        int countPhonesI = 0;
+        int countPhonesJ = 0;
+        String temp = "";
+        System.out.println(repeat(80, "="));
+        for (var contact : hashmap.entrySet()) {
+            contactByPhones[index++] = String.format("%s: %s", contact.getKey().trim(), contact.getValue().trim());
+        }
+        for (int i = 0; i < contactByPhones.length; i++) {
+            countPhonesI = contactByPhones[i].split(":")[1].split(",").length;
+            for (int j = i + 1; j < contactByPhones.length; j++) {
+                countPhonesJ = contactByPhones[j].split(":")[1].split(",").length;
+                if (countPhonesJ > countPhonesI) {
+                    temp = contactByPhones[j];
+                    contactByPhones[j] = contactByPhones[i];
+                    contactByPhones[i] = temp;
+                }
+            }
+            System.out.println(contactByPhones[i]);
+        }
+        System.out.println(repeat(80, "="));
 
     }
-    public T first(){
-        if(firstElem > curElem){
-            return null;
+
+    public static void addContact(Map<String, String> phonebook, String contactToAdd) throws IOException {
+        String pathDir = System.getProperty("user.dir");
+        String pathFileName = pathDir.concat("\\Task1.txt");
+        File phonebookFile = new File(pathFileName);
+
+        FileWriter fileWr = new FileWriter(phonebookFile, false);
+
+        String[] contact = contactToAdd.split(" ");
+        String name = contact[0].trim();
+        String phonenumber = contact[1].trim();
+
+        boolean isNameExist = phonebook.containsKey(name);
+        boolean isPhoneExist = false;
+        if (isNameExist) {
+            if (!phonebook.get(name).isEmpty() && !phonebook.get(name).equals(" ")) {
+                String phonesLine = phonebook.get(name);
+                String[] phones = phonesLine.replaceAll(",", "").split(" ");
+
+                for (String number : phones) {
+                    if (number.equalsIgnoreCase(phonenumber)) {
+                    isPhoneExist = true;
+                    }
+                }
+
+                if (!isPhoneExist) {
+                    System.out.println(repeat(80, "="));
+                    System.out.printf("К существующему контакту %s\nC номерами телефонов %s\nДобавлен номер %s\n", name, phonesLine, phonenumber);
+                    phonebook.put(name, phonesLine.concat(String.format(", %s", phonenumber)));
+                    System.out.println(repeat(80, "="));
+                } else {
+                    System.out.println(repeat(80, "="));
+                    System.out.printf("Введенный контакт %s, с номером %s уже существует\n", name, phonenumber);
+                    System.out.println(repeat(80, "="));
+                }
+            } else {
+                System.out.println(repeat(80, "="));
+                System.out.printf("У контакта %s отсутствовали номера телефонов\nДобавлен номер %s\n", name, phonenumber);
+                phonebook.put(name, phonenumber);
+                System.out.println(repeat(80, "="));
+            }
+        } else {
+            System.out.println(repeat(80, "="));
+            System.out.printf("Добавлен новый контакт %s: %s\n", name, phonenumber);
+            phonebook.put(name, phonenumber);
+            System.out.println(repeat(80, "="));
         }
-        return (T)ll[firstElem];
+        for (var contactLine : phonebook.entrySet()) {
+            fileWr.write(String.format("%s: %s\n", contactLine.getKey().trim(), contactLine.getValue().trim()));
+        }
+        fileWr.flush();
+        fileWr.close();
     }
-    void updateArr(){
-        if(firstElem > ll.length / 2){
-            firstElem -= ll.length / 2;
-            curElem -= ll.length / 2;
-            ll = Arrays.copyOfRange(ll,ll.length / 2,ll.length);
-        }
-        ll = Arrays.copyOf(ll,ll.length * 2);
+
+    public static String repeat(int count, String with) {
+        return new String(new char[count]).replace("\0", with);
     }
 }
